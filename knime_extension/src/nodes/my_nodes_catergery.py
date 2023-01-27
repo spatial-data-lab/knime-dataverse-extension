@@ -56,7 +56,8 @@ class URLSettings:
 )
 class DataVerseSearch:
     """
-    Dataverse Search
+    Dataverse Search. Search for datasets, files, or dataverses by keyword.
+    By default, it will return the first 1000 results.
     """
 
     base_url = URLSettings()
