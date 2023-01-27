@@ -412,7 +412,7 @@ class DataVerseReplaceDataFile:
 
 
 @knext.node(
-    name="Dataverse Publish",
+    name="Dataverse Publisher",
     node_type=knext.NodeType.SINK,
     icon_path=__NODE_ICON_PATH + "DvPublish.png",
     category=__category,
