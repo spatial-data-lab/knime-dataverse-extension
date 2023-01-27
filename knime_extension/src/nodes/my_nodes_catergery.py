@@ -1,15 +1,9 @@
 # lingbo
 # from typing import Callable
-import pandas as pd
-import geopandas as gp
+
 import knime_extension as knext
-import util.knime_utils as knut
-import requests
-from pyDataverse.api import NativeApi, DataAccessApi
-from pyDataverse.models import Dataverse
-import io
-import numpy as np
-from shapely.geometry import Polygon
+# import util.knime_utils as knut
+
 
 __category = knext.category(
     path="/community/opendata",
@@ -94,6 +88,7 @@ class DataVerseSearch:
             "%s/api/search?q=%s&start=%d&type=%s&per_page=%d"
             % (self.base_url.base_url, search_term, start, type_, per_page)
         )
+        import requests
         r = requests.get(url)
         data = r.json()
         pages = data["data"]["total_count"] // per_page + 1
@@ -110,6 +105,7 @@ class DataVerseSearch:
             temp["url"] = url
             temp["query"] = search_term
             urls.append(temp)
+        import pandas as pd
         urls = pd.DataFrame(urls)
 
         def get_data(url):
@@ -197,10 +193,11 @@ class DataVerseQueryDataFilesSource:
     def execute(self, exec_context: knext.ExecutionContext):
 
         global_doi = self.global_doi
+        from pyDataverse.api import NativeApi
         api = NativeApi(self.base_url.base_url)
-        # data_api = DataAccessApi(self.base_url.base_url)
         dataset = api.get_dataset(global_doi)
         files_list = dataset.json()["data"]["latestVersion"]["files"]
+        import pandas as pd
         df = pd.json_normalize(files_list)
         df = df.fillna(method="bfill")
 
@@ -248,10 +245,11 @@ class DataVerseQueryDataFiles:
     def execute(self, exec_context: knext.ExecutionContext, input_table):
 
         global_doi = input_table.to_pandas()[self.global_doi_column].values[0]
+        from pyDataverse.api import NativeApi
         api = NativeApi(self.base_url.base_url)
-        # data_api = DataAccessApi(self.base_url.base_url)
         dataset = api.get_dataset(global_doi)
         files_list = dataset.json()["data"]["latestVersion"]["files"]
+        import pandas as pd
         df = pd.json_normalize(files_list)
         df = df.fillna(method="bfill")
 
@@ -307,18 +305,21 @@ class DataVerseReadDataFile:
     def execute(self, exec_context: knext.ExecutionContext, input_table):
 
         
-        # api = NativeApi(self.base_url.base_url)
+        from pyDataverse.api import DataAccessApi
         data_api = DataAccessApi(self.base_url.base_url)
 
         file_id = input_table.to_pandas()[self.dataFile_id_column].values[0]
         response = data_api.get_datafile(file_id)
+        import io
         content_ = io.BytesIO(response.content)
 
         if self.is_geo:
+            import geopandas as gp
             df = gp.read_file(content_)
             df.reset_index(inplace=True, drop=True)
 
         else:
+            import pandas as pd
             df = pd.read_csv(content_, encoding="utf8", sep="\t")
         return knext.Table.from_pandas(df)
 
@@ -375,7 +376,7 @@ class DataVerseReplaceDataFile:
 
     def execute(self, exec_context: knext.ExecutionContext, input_table):
 
-        
+        from pyDataverse.api import NativeApi
         api = NativeApi(self.base_url.base_url, self.API_TOKEN)
         json_str = """{"description":"My description.","categories":["Data"],"forceReplace":true}"""
 
@@ -454,7 +455,7 @@ class DataVersePublish:
 
     def execute(self, exec_context: knext.ExecutionContext):
 
-        
+        from pyDataverse.api import NativeApi
         api = NativeApi(self.base_url.base_url, self.API_TOKEN)
         api.publish_dataset(pid=self.dataset_doi, release_type="major")
         return None
