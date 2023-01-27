@@ -5,7 +5,6 @@ import geopandas as gp
 import knime_extension as knext
 import util.knime_utils as knut
 import requests
-from pandarallel import pandarallel
 from pyDataverse.api import NativeApi, DataAccessApi
 from pyDataverse.models import Dataverse
 import io
@@ -15,7 +14,7 @@ from shapely.geometry import Polygon
 __category = knext.category(
     path="/community/opendata",
     level_id="my_nodes_catergery",
-    name="dataverse",
+    name="Dataverse",
     description="Nodes that for testing and future exploration.",
     # starting at the root folder of the extension_module parameter in the knime.yml file
     icon="icons/icon/Geolab/DvGlobalDOIlink.png",
@@ -25,25 +24,42 @@ __category = knext.category(
 # Root path for all node icons in this file
 __NODE_ICON_PATH = "icons/icon/Geolab/"
 
+
+
+@knext.parameter_group(label="Base Settings")
+class URLSettings:
+    """
+    Base URL Settings
+    """
+    base_url = knext.StringParameter(
+        "Base URL",
+        "The base URL of the Dataverse instance. For example, https://dataverse.harvard.edu",
+        default_value="https://dataverse.harvard.edu",
+    )
+
+
 ############################################
-# Harvard DataVerse Search Node
+# DataVerse Search Node
 ############################################
+
 
 
 @knext.node(
-    name="Harvard DataVerse Search",
+    name="Dataverse Search",
     node_type=knext.NodeType.SOURCE,
     icon_path=__NODE_ICON_PATH + "DvSearch.png",
     category=__category,
 )
 @knext.output_table(
     name="Output Table",
-    description="Output table of Harvard DataVerse Search",
+    description="Output table of DataVerse Search",
 )
-class HarvardDataVerseSearch:
+class DataVerseSearch:
     """
-    Harvard DataVerse Search
+    Dataverse Search
     """
+
+    base_url = URLSettings()
 
     # input parameters
     search_term = knext.StringParameter(
@@ -65,7 +81,7 @@ class HarvardDataVerseSearch:
 
     def execute(self, exec_context: knext.ExecutionContext):
         # get the search term
-        pandarallel.initialize(progress_bar=False, nb_workers=15)
+        # pandarallel.initialize(progress_bar=False, nb_workers=15)
 
         search_term = self.search_term
 
@@ -73,8 +89,8 @@ class HarvardDataVerseSearch:
         type_ = self.search_type
         per_page = 1000
         url = (
-            "https://dataverse.harvard.edu/api/search?q=%s&start=%d&type=%s&per_page=%d"
-            % (search_term, start, type_, per_page)
+            "%s/api/search?q=%s&start=%d&type=%s&per_page=%d"
+            % (self.base_url.base_url, search_term, start, type_, per_page)
         )
         r = requests.get(url)
         data = r.json()
@@ -86,8 +102,8 @@ class HarvardDataVerseSearch:
         for start in range(pages):
             temp = {}
             url = (
-                "https://dataverse.harvard.edu/api/search?q=%s&start=%d&type=%s&per_page=%d"
-                % (search_term, start, type_, per_page)
+                "%s/api/search?q=%s&start=%d&type=%s&per_page=%d"
+                % (self.base_url.base_url, search_term, start, type_, per_page)
             )
             temp["url"] = url
             temp["query"] = search_term
@@ -102,7 +118,7 @@ class HarvardDataVerseSearch:
             data = r.json()
             return pd.DataFrame(data["data"]["items"])
 
-        urls["data"] = urls["url"].parallel_apply(get_data)
+        urls["data"] = urls["url"].apply(get_data)
         df = pd.concat(urls["data"].values, ignore_index=True)
 
         def float_list(x):
@@ -144,24 +160,26 @@ class HarvardDataVerseSearch:
 
 
 ############################################
-# Harvard DataVerse Query Data Files Source Node
+# Dataverse Query Data Files Source Node
 ############################################
 
 
 @knext.node(
-    name="Harvard DataVerse GlobalDOI Search",
+    name="Dataverse Global DOI Search",
     node_type=knext.NodeType.SOURCE,
     icon_path=__NODE_ICON_PATH + "DvDOIsource.png",
     category=__category,
 )
 @knext.output_table(
     name="Output Table",
-    description="Output table of Harvard DataVerse Query Data Files",
+    description="Output table of Dataverse Query Data Files",
 )
-class HarvardDataVerseQueryDataFilesSource:
+class DataVerseQueryDataFilesSource:
     """
-    Harvard DataVerse Query Data Files
+    Dataverse Query Data Files
     """
+
+    base_url = URLSettings()
 
     # input parameters
     global_doi = knext.StringParameter(
@@ -176,10 +194,9 @@ class HarvardDataVerseQueryDataFilesSource:
 
     def execute(self, exec_context: knext.ExecutionContext):
 
-        base_url = "https://dataverse.harvard.edu/"
         global_doi = self.global_doi
-        api = NativeApi(base_url)
-        data_api = DataAccessApi(base_url)
+        api = NativeApi(self.base_url.base_url)
+        # data_api = DataAccessApi(self.base_url.base_url)
         dataset = api.get_dataset(global_doi)
         files_list = dataset.json()["data"]["latestVersion"]["files"]
         df = pd.json_normalize(files_list)
@@ -189,28 +206,30 @@ class HarvardDataVerseQueryDataFilesSource:
 
 
 ############################################
-# Harvard DataVerse Query Data Files Node
+# Dataverse Query Data Files Node
 ############################################
 
 
 @knext.node(
-    name="Harvard DataVerse GlobalDOI Link ",
+    name="Dataverse Global DOI Link ",
     node_type=knext.NodeType.MANIPULATOR,
     icon_path=__NODE_ICON_PATH + "DvGlobalDOIlink.png",
     category=__category,
 )
 @knext.input_table(
     name="Input Table",
-    description="Input table of Harvard DataVerse Query Data Files",
+    description="Input table of Dataverse Query Data Files",
 )
 @knext.output_table(
     name="Output Table",
-    description="Output table of Harvard DataVerse Query Data Files",
+    description="Output table of Dataverse Query Data Files",
 )
-class HarvardDataVerseQueryDataFiles:
+class DataVerseQueryDataFiles:
     """
-    Harvard DataVerse Query Data Files
+    Dataverse Query Data Files
     """
+
+    base_url = URLSettings()
 
     # input parameters
     global_doi_column = knext.ColumnParameter(
@@ -224,10 +243,9 @@ class HarvardDataVerseQueryDataFiles:
 
     def execute(self, exec_context: knext.ExecutionContext, input_table):
 
-        base_url = "https://dataverse.harvard.edu/"
         global_doi = input_table.to_pandas()[self.global_doi_column].values[0]
-        api = NativeApi(base_url)
-        data_api = DataAccessApi(base_url)
+        api = NativeApi(self.base_url.base_url)
+        # data_api = DataAccessApi(self.base_url.base_url)
         dataset = api.get_dataset(global_doi)
         files_list = dataset.json()["data"]["latestVersion"]["files"]
         df = pd.json_normalize(files_list)
@@ -237,28 +255,30 @@ class HarvardDataVerseQueryDataFiles:
 
 
 ############################################
-# Harvard DataVerse Read Data File Node
+# Dataverse Read Data File Node
 ############################################
 
 
 @knext.node(
-    name="Harvard DataVerse DataID Reader",
+    name="Dataverse DataID Reader",
     node_type=knext.NodeType.MANIPULATOR,
     icon_path=__NODE_ICON_PATH + "DvFileReader.png",
     category=__category,
 )
 @knext.input_table(
     name="Input Table",
-    description="Input table of Harvard DataVerse Read Data File",
+    description="Input table of Dataverse Read Data File",
 )
 @knext.output_table(
     name="Output Table",
-    description="Output table of Harvard DataVerse Read Data File",
+    description="Output table of Dataverse Read Data File",
 )
-class HarvardDataVerseReadDataFile:
+class DataVerseReadDataFile:
     """
-    Harvard DataVerse Read Data File
+    Dataverse Read Data File
     """
+
+    base_url = URLSettings()
 
     # input parameters
     dataFile_id_column = knext.ColumnParameter(
@@ -278,9 +298,9 @@ class HarvardDataVerseReadDataFile:
 
     def execute(self, exec_context: knext.ExecutionContext, input_table):
 
-        base_url = "https://dataverse.harvard.edu/"
-        api = NativeApi(base_url)
-        data_api = DataAccessApi(base_url)
+        
+        # api = NativeApi(self.base_url.base_url)
+        data_api = DataAccessApi(self.base_url.base_url)
 
         file_id = input_table.to_pandas()[self.dataFile_id_column].values[0]
         response = data_api.get_datafile(file_id)
@@ -296,24 +316,26 @@ class HarvardDataVerseReadDataFile:
 
 
 ############################################
-# Harvard DataVerse Replace Data File Node
+# Dataverse Replace Data File Node
 ############################################
 
 
 @knext.node(
-    name="Harvard DataVerse Data File Replacer",
+    name="Dataverse Data File Replacer",
     node_type=knext.NodeType.SINK,
     icon_path=__NODE_ICON_PATH + "DvReplace.png",
     category=__category,
 )
 @knext.input_table(
     name="Input Table",
-    description="Input table of Harvard DataVerse Replace Data File",
+    description="Input table of Dataverse Replace Data File",
 )
-class HarvardDataVerseReplaceDataFile:
+class DataVerseReplaceDataFile:
     """
-    Harvard DataVerse Replace Data File
+    Dataverse Replace Data File
     """
+
+    base_url = URLSettings()
 
     # input parameters
     dataFile_id_column = knext.ColumnParameter(
@@ -331,7 +353,7 @@ class HarvardDataVerseReplaceDataFile:
     )
 
     API_TOKEN = knext.StringParameter(
-        "API Token", "The API Token for the Harvard DataVerse. "
+        "API Token", "The API Token for the Dataverse. "
     )
 
     def configure(self, configure_context, input_schema):
@@ -340,8 +362,8 @@ class HarvardDataVerseReplaceDataFile:
 
     def execute(self, exec_context: knext.ExecutionContext, input_table):
 
-        base_url = "https://dataverse.harvard.edu/"
-        api = NativeApi(base_url, self.API_TOKEN)
+        
+        api = NativeApi(self.base_url.base_url, self.API_TOKEN)
         json_str = """{"description":"My description.","categories":["Data"],"forceReplace":true}"""
 
         def check_need_replace(x, file_list):
@@ -385,20 +407,22 @@ class HarvardDataVerseReplaceDataFile:
 
 
 ############################################
-# Harvard DataVerse Publish Node
+# Dataverse Publish Node
 ############################################
 
 
 @knext.node(
-    name="Harvard DataVerse Publish",
+    name="Dataverse Publish",
     node_type=knext.NodeType.SINK,
     icon_path=__NODE_ICON_PATH + "DvPublish.png",
     category=__category,
 )
-class HarvardDataVersePublish:
+class DataVersePublish:
     """
-    Harvard DataVerse Publish
+    Dataverse Publish
     """
+
+    base_url = URLSettings()
 
     # input parameters
     dataset_doi = knext.StringParameter(
@@ -407,7 +431,7 @@ class HarvardDataVersePublish:
     )
 
     API_TOKEN = knext.StringParameter(
-        "API Token", "The API Token for the Harvard DataVerse. "
+        "API Token", "The API Token for the Dataverse. "
     )
 
     def configure(self, configure_context):
@@ -416,7 +440,7 @@ class HarvardDataVersePublish:
 
     def execute(self, exec_context: knext.ExecutionContext):
 
-        base_url = "https://dataverse.harvard.edu/"
-        api = NativeApi(base_url, self.API_TOKEN)
+        
+        api = NativeApi(self.base_url.base_url, self.API_TOKEN)
         api.publish_dataset(pid=self.dataset_doi, release_type="major")
         return None
