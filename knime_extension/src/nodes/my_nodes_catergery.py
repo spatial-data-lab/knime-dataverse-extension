@@ -165,7 +165,7 @@ class DataVerseSearch:
 
 
 @knext.node(
-    name="Dataverse Global DOI Search",
+    name="Dataverse Get Dataset Contents (Source)",
     node_type=knext.NodeType.SOURCE,
     icon_path=__NODE_ICON_PATH + "DvDOIsource.png",
     category=__category,
@@ -211,7 +211,7 @@ class DataVerseQueryDataFilesSource:
 
 
 @knext.node(
-    name="Dataverse Global DOI Link ",
+    name="Dataverse Get Dataset Contents",
     node_type=knext.NodeType.MANIPULATOR,
     icon_path=__NODE_ICON_PATH + "DvGlobalDOIlink.png",
     category=__category,
@@ -260,7 +260,7 @@ class DataVerseQueryDataFiles:
 
 
 @knext.node(
-    name="Dataverse DataID Reader",
+    name="Dataverse Data File Reader",
     node_type=knext.NodeType.MANIPULATOR,
     icon_path=__NODE_ICON_PATH + "DvFileReader.png",
     category=__category,
