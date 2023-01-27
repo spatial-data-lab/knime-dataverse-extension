@@ -58,6 +58,7 @@ class DataVerseSearch:
     """
     Dataverse Search. Search for datasets, files, or dataverses by keyword.
     By default, it will return the first 1000 results.
+    Notice that this node may take a long time to run.
     """
 
     base_url = URLSettings()
