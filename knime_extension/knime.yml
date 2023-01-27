@@ -1,5 +1,5 @@
-group_id: sdl.harvard # gourp id
-name: geospatial # Will be concatenated with the group_id to an ID FIXME:
+group_id: dataverse.harvard # gourp id
+name: dataverse # Will be concatenated with the group_id to an ID FIXME:
 author: Xiaokang Fu, Lingbo Liu, Tobias
 vendor: SDL, Harvard, Cambridge US # address
 description: some open data nodes especially for dataverse # Human readable bundle name / description

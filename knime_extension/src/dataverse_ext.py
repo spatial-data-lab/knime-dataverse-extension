@@ -8,7 +8,7 @@ category = knext.category(
     name="knime-dataverse-extension",
     description="some open data nodes especially for dataverse",
     # starting at the root folder of the extension_module parameter in the knime.yml file
-    icon="icons/icon/knime-dataverse-extension.png",
+    icon="icons/icon/Geolab/DvGlobalDOIlink.png",
 )
 
 

@@ -8,4 +8,5 @@ dependencies:
   - knime-extension
   - knime-python-base
   - pip:
-    - pyecharts
+    - pandarallel
+    - pyDataverse
