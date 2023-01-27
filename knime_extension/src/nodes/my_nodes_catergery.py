@@ -29,10 +29,10 @@ __NODE_ICON_PATH = "icons/icon/Geolab/"
 @knext.parameter_group(label="Base Settings")
 class URLSettings:
     """
-    Base URL Settings
+    Base URL settings for the Dataverse instance. For example, https://dataverse.harvard.edu
     """
     base_url = knext.StringParameter(
-        "Base URL",
+        "Dataverse Server URL",
         "The base URL of the Dataverse instance. For example, https://dataverse.harvard.edu",
         default_value="https://dataverse.harvard.edu",
     )
@@ -172,11 +172,11 @@ class DataVerseSearch:
 )
 @knext.output_table(
     name="Output Table",
-    description="Output table of Dataverse Query Data Files",
+    description="Dataset Contents",
 )
 class DataVerseQueryDataFilesSource:
     """
-    Dataverse Query Data Files
+    Get dataset contents (data files) from a Dataverse DOI.
     """
 
     base_url = URLSettings()
@@ -218,15 +218,17 @@ class DataVerseQueryDataFilesSource:
 )
 @knext.input_table(
     name="Input Table",
-    description="Input table of Dataverse Query Data Files",
+    description="A Dataverse search result table",
 )
 @knext.output_table(
     name="Output Table",
-    description="Output table of Dataverse Query Data Files",
+    description="Dataset Contents",
 )
 class DataVerseQueryDataFiles:
     """
-    Dataverse Query Data Files
+    Get dataset contents (data files) from a Dataverse search result table. 
+    Noting that the search result table must contain a column with the global DOI of the dataset.
+    Now only works for one dataset at a time.
     """
 
     base_url = URLSettings()
@@ -267,15 +269,19 @@ class DataVerseQueryDataFiles:
 )
 @knext.input_table(
     name="Input Table",
-    description="Input table of Dataverse Read Data File",
+    description="Dataset contents table",
 )
 @knext.output_table(
     name="Output Table",
-    description="Output table of Dataverse Read Data File",
+    description="Table of the slected data file",
 )
 class DataVerseReadDataFile:
     """
-    Dataverse Read Data File
+    Read a data file from a Dataverse dataset.
+    The input table must contain a column with the DataFile ID of the dataset.
+    The output table is a table of the selected data file.
+    Now only works for one file at a time.
+    Only works for tabular data files and geo data files (Like geojson, shapefile, etc).
     """
 
     base_url = URLSettings()
@@ -288,7 +294,7 @@ class DataVerseReadDataFile:
 
     is_geo = knext.BoolParameter(
         "Is Geo",
-        "Is the file a geo file?",
+        "Is the file a geo file? Check it if the file is a geo file.",
         default_value=False,
     )
 
@@ -332,7 +338,12 @@ class DataVerseReadDataFile:
 )
 class DataVerseReplaceDataFile:
     """
-    Dataverse Replace Data File
+    Replace a Data File in a Dataverse dataset from a local file.
+    The input table must contain a column with the DataFile ID of the dataset.
+    The input table must contain a column with the DataFile Name of the dataset.
+    Now only works for one file at a time.
+    Note: The file to be uploaded must be in the same format as the original file.
+    If you want to publish the dataset after replacing the file, you need to connect the "Dataverse Publisher" node.
     """
 
     base_url = URLSettings()
@@ -419,7 +430,8 @@ class DataVerseReplaceDataFile:
 )
 class DataVersePublish:
     """
-    Dataverse Publish
+    Dataverse Publisher.
+    Note: The dataset must be in draft mode.
     """
 
     base_url = URLSettings()
