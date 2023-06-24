@@ -7,6 +7,6 @@ long_description: #
 version: 0.0.1 # Version of this Python node extension
 license_file: LICENSE.TXT # Best practice: put your LICENSE.TXT next to the knime.yml; otherwise you would need to change to path/to/LICENSE.txt
 extension_module: src/dataverse_ext # The .py Python module containing the nodes of your extension
-env_yml_path: knime-dataverse-extension # This is necessary for bundling, but not needed during development
+env_yml_path:  C:\Users\xif626\AppData\Local\mambaforge\envs\dataverse_env # This is necessary for bundling, but not needed during development
 feature_dependencies: 
   - org.knime.features.geospatial 4.7.0 # FIXME: whats this

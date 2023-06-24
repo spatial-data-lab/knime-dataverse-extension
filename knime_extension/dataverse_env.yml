@@ -1,4 +1,4 @@
-name: knime-dataverse-extension
+name: dataverse_env
 channels:
   - knime
   - conda-forge
