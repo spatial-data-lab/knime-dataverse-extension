@@ -314,6 +314,7 @@ class DataVerseReadDataFile:
         content_ = io.BytesIO(response.content)
 
         if self.is_geo:
+            # FIXME: shoudn't use geopandas
             import geopandas as gp
             df = gp.read_file(content_)
             df.reset_index(inplace=True, drop=True)
