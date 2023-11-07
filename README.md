@@ -14,7 +14,15 @@ some open data nodes especially for dataverse
 
 
 ## Installation
-The extension will be is installable via the [KNIME Hub](https://hub.knime.com/) once it is publicly available. 
+
+1. Install from `https://update.knime.com/community-contributions/trunk` in KNIME AP
+
+[image](https://github.com/spatial-data-lab/knime-dataverse-extension/assets/5254627/db1c3d38-ee3c-4bbc-ad0a-7dd2c0afffe2)
+
+
+[image](https://github.com/spatial-data-lab/knime-dataverse-extension/assets/5254627/19fa8fbb-e225-4d28-98e6-f5463cc7eac7)
+
+
 If you want to test the latest version you can follow the instructions in the Setup section of the [Contribution guide](https://github.com/spatial-data-lab/knime-geospatial-extension/blob/main/CONTRIBUTING.md#setup).
 
 
